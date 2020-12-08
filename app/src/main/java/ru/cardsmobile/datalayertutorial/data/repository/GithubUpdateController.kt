@@ -24,11 +24,8 @@ class GithubUpdateController @Inject constructor(
                 emitter.onNext(UpdateResult.RepeatedRequest)
             } else {
                 compositeDisposable += getRepositories(userName)
-                    .doOnSuccess { repositoriesDto ->
-                        emitter.onNext(UpdateResult.Success(repositoriesDto))
-                    }
                     .flatMapCompletable {
-                        notifyEmitters(userName)
+                        notifyEmitters(userName, it)
                     }
                     .onErrorResumeNext { throwable ->
                         notifyEmitters(userName, throwable)
@@ -45,10 +42,11 @@ class GithubUpdateController @Inject constructor(
         .timer(1, TimeUnit.SECONDS) // искуственная задержка
         .flatMap { networkSource.getRepositories(userName) }
 
-    private fun notifyEmitters(userName: String): Completable {
+    private fun notifyEmitters(userName: String, repositoriesDto: List<RepositoryDto>): Completable {
         val emitters = updateRegistry.pollEmitters(userName)
         return Completable.fromAction {
             emitters.forEach {
+                it.onNext(UpdateResult.Success(repositoriesDto))
                 it.onComplete()
             }
         }
