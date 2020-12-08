@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Data Layer Tutorial</string>
+    <string name="error_text">Ошибка</string>
+    <string name="other_error_text">Что-то пошло не так</string>
+    <string name="loading_text">Загрузка</string>
+    <string name="find_text">Обновить</string>
+    <string name="result_text">Результат</string>
+    <string name="repo_amount_result_text">Количество репозиториев: %d</string>
+    <string name="repeated_error_text">Запрос уже отправлен, подождите</string>
+    <string name="no_internet_error_text">Нет интернета</string>
+    <string name="enter_username_text">Имя пользователя</string>
+</resources>
