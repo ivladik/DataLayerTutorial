@@ -3,16 +3,27 @@ package ru.cardsmobile.datalayertutorial.data.database.dao
 import androidx.room.*
 import io.reactivex.*
 import ru.cardsmobile.datalayertutorial.data.database.entity.RepositoryDb
+import ru.cardsmobile.datalayertutorial.data.database.entity.UserNameDb
 
 @Dao
-abstract class RepositoryDao {
+interface RepositoryDao {
 
     @Query("SELECT * FROM Repository WHERE userNameId = :userName")
-    protected abstract fun selectRepositoriesByUserName(userName: String): Observable<List<RepositoryDb>>
+    fun observeRepositoriesByUserName(userName: String): Observable<List<RepositoryDb>>
 
-    fun selectRepositoriesByUserNameDistinct(userName: String): Observable<List<RepositoryDb>> =
-        selectRepositoriesByUserName(userName).distinctUntilChanged()
+    fun observeRepositoriesByUserNameDistinct(userName: String): Observable<List<RepositoryDb>> =
+        observeRepositoriesByUserName(userName).distinctUntilChanged()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insertRepositories(repositoryDbs: List<RepositoryDb>): Completable
+    fun insertRepositories(repositoryDbs: List<RepositoryDb>)
+
+    @Transaction
+    fun insertRepositoriesTransaction(
+        userNameDao: UserNameDao,
+        userNameDb: UserNameDb,
+        repositoriesDb: List<RepositoryDb>
+    ) {
+        userNameDao.insertUserName(userNameDb)
+        insertRepositories(repositoriesDb)
+    }
 }

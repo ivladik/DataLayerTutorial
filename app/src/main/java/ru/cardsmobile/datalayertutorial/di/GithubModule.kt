@@ -14,8 +14,6 @@ import ru.cardsmobile.datalayertutorial.data.api.GithubApi
 import ru.cardsmobile.datalayertutorial.data.database.GithubDatabase
 import ru.cardsmobile.datalayertutorial.data.database.dao.RepositoryDao
 import ru.cardsmobile.datalayertutorial.data.database.dao.UserNameDao
-import ru.cardsmobile.datalayertutorial.data.provider.ConnectionInfoProvider
-import ru.cardsmobile.datalayertutorial.data.provider.ConnectionInfoProviderImpl
 import ru.cardsmobile.datalayertutorial.data.repository.GithubRepositoryImpl
 import ru.cardsmobile.datalayertutorial.data.source.GithubDatabaseSource
 import ru.cardsmobile.datalayertutorial.data.source.GithubDatabaseSourceImpl
@@ -27,10 +25,9 @@ import ru.cardsmobile.datalayertutorial.presentation.viewmodel.ViewModelFactory
 import javax.inject.Singleton
 
 @Module
-abstract class TestModule {
+abstract class GithubModule {
 
     @Binds
-    @Singleton
     abstract fun bindsGithubRepository(githubRepositoryImpl: GithubRepositoryImpl): GithubRepository
 
     @Binds
@@ -70,6 +67,7 @@ abstract class TestModule {
 
         @Provides
         @JvmStatic
+        @Singleton
         fun providesRetrofit(): GithubApi {
             val retrofit = Retrofit
                 .Builder()
@@ -80,10 +78,5 @@ abstract class TestModule {
 
             return retrofit.create(GithubApi::class.java)
         }
-
-        @Provides
-        @JvmStatic
-        fun providesConnectionInfoProvider(application: Application): ConnectionInfoProvider =
-            ConnectionInfoProviderImpl(application.applicationContext)
     }
 }

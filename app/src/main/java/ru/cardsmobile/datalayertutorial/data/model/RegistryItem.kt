@@ -1,4 +1,4 @@
-package ru.cardsmobile.datalayertutorial.data.dto
+package ru.cardsmobile.datalayertutorial.data.model
 
 import io.reactivex.ObservableEmitter
 

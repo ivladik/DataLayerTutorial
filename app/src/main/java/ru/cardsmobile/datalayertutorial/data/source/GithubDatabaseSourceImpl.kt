@@ -13,13 +13,19 @@ class GithubDatabaseSourceImpl @Inject constructor(
 ) : GithubDatabaseSource {
 
     override fun observeRepositoriesByUserName(userName: String): Observable<List<RepositoryDb>> =
-        repositoryDao.selectRepositoriesByUserNameDistinct(userName)
+        repositoryDao.observeRepositoriesByUserNameDistinct(userName)
 
-    override fun saveRepositories(repositoryDbList: List<RepositoryDb>): Completable =
-        repositoryDao.insertRepositories(repositoryDbList)
-
-    override fun saveUserName(userNameDb: UserNameDb): Completable =
-        userNameDao.insertUserName(userNameDb)
+    override fun saveRepositories(
+        repositoriesDb: List<RepositoryDb>,
+        userNameDb: UserNameDb
+    ): Completable =
+        Completable.fromAction {
+            repositoryDao.insertRepositoriesTransaction(
+                userNameDao,
+                userNameDb,
+                repositoriesDb
+            )
+        }
 
     override fun getLatestUserName(): Maybe<UserNameDb> =
         userNameDao.selectLatestUserName()

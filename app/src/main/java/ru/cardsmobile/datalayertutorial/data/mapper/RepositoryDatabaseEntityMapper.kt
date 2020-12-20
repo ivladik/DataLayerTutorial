@@ -13,7 +13,7 @@ class RepositoryDatabaseEntityMapper @Inject constructor() {
     ): RepositoryDb =
         RepositoryDb(
             id = repositoryDto.id ?: throw DtoMappingException(),
-            userNameId = userName ?: throw DtoMappingException(),
+            userNameId = userName,
             starsCount = repositoryDto.starsCount ?: throw DtoMappingException(),
             forksCount = repositoryDto.forksCount ?: throw DtoMappingException(),
             name = repositoryDto.name ?: throw DtoMappingException()

@@ -8,9 +8,10 @@ interface GithubDatabaseSource {
 
     fun observeRepositoriesByUserName(userName: String): Observable<List<RepositoryDb>>
 
-    fun saveRepositories(repositoryDbList: List<RepositoryDb>): Completable
-
-    fun saveUserName(userNameDb: UserNameDb): Completable
+    fun saveRepositories(
+        repositoriesDb: List<RepositoryDb>,
+        userNameDb: UserNameDb
+    ): Completable
 
     fun getLatestUserName(): Maybe<UserNameDb>
 }

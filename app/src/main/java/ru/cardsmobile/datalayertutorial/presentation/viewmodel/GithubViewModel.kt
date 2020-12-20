@@ -6,8 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
-import ru.cardsmobile.datalayertutorial.domain.usecase.ClearSubscriptionsUseCase
-import ru.cardsmobile.datalayertutorial.domain.usecase.GetRepositoryUseCase
+import ru.cardsmobile.datalayertutorial.domain.usecase.GetRepositoriesUseCase
 import ru.cardsmobile.datalayertutorial.domain.usecase.RefreshRepositoryUseCase
 import ru.cardsmobile.datalayertutorial.presentation.mapper.GithubResultModelMapper
 import ru.cardsmobile.datalayertutorial.presentation.model.GithubResultModel
@@ -15,8 +14,7 @@ import javax.inject.Inject
 
 class GithubViewModel @Inject constructor(
     private val refreshRepositoryUseCase: RefreshRepositoryUseCase,
-    private val getRepositoryUseCase: GetRepositoryUseCase,
-    private val clearSubscriptionsUseCase: ClearSubscriptionsUseCase,
+    private val getRepositoriesUseCase: GetRepositoriesUseCase,
     private val githubResultModelMapper: GithubResultModelMapper
 ) : ViewModel() {
 
@@ -48,7 +46,7 @@ class GithubViewModel @Inject constructor(
     }
 
     private fun observeRepositories() {
-        compositeDisposable += getRepositoryUseCase()
+        compositeDisposable += getRepositoriesUseCase()
             .doOnSubscribe { githubState.postValue(GithubResultModel.Loading) }
             .map { result ->
                 githubResultModelMapper.map(result)
@@ -66,9 +64,7 @@ class GithubViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        clearSubscriptionsUseCase()
         compositeDisposable.clear()
-
         super.onCleared()
     }
 

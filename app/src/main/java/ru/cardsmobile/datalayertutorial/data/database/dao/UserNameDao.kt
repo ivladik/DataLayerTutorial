@@ -11,5 +11,5 @@ interface UserNameDao {
     fun selectLatestUserName(): Maybe<UserNameDb>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertUserName(userNameDb: UserNameDb): Completable
+    fun insertUserName(userNameDb: UserNameDb)
 }

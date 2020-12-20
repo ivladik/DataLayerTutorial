@@ -1,44 +1,40 @@
 package ru.cardsmobile.datalayertutorial.data.repository
 
+import android.util.Log
 import io.reactivex.*
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import ru.cardsmobile.datalayertutorial.data.dto.RepositoryDto
-import ru.cardsmobile.datalayertutorial.data.dto.UpdateResult
-import ru.cardsmobile.datalayertutorial.data.mapper.RepositoryDatabaseEntityMapper
+import ru.cardsmobile.datalayertutorial.data.model.UpdateResult
 import ru.cardsmobile.datalayertutorial.data.mapper.RepositoryMapper
-import ru.cardsmobile.datalayertutorial.data.mapper.UserNameDatabaseEntityMapper
-import ru.cardsmobile.datalayertutorial.data.provider.ConnectionInfoProvider
 import ru.cardsmobile.datalayertutorial.data.source.GithubDatabaseSource
 import ru.cardsmobile.datalayertutorial.domain.entity.GithubResult
 import ru.cardsmobile.datalayertutorial.domain.repository.GithubRepository
+import java.net.UnknownHostException
 import javax.inject.Inject
 
 class GithubRepositoryImpl @Inject constructor(
     private val databaseSource: GithubDatabaseSource,
     private val updateController: GithubUpdateController,
-    private val repositoryDatabaseEntityMapper: RepositoryDatabaseEntityMapper,
-    private val userNameDatabaseEntityMapper: UserNameDatabaseEntityMapper,
-    private val repositoryMapper: RepositoryMapper,
-    private val connectionInfoProvider: ConnectionInfoProvider
+    private val repositoryMapper: RepositoryMapper
 ) : GithubRepository {
 
     private val compositeDisposable = CompositeDisposable()
 
-    override fun observeRepositories(userName: String): Observable<GithubResult> = databaseSource
+    override fun getLatestUserName(): Maybe<String> = databaseSource
         .getLatestUserName()
         .map { it.userName }
-        .switchIfEmpty(Maybe.just(userName))
-        .flatMapObservable { result -> observeRepositoriesInternal(result) }
         .subscribeOn(Schedulers.io())
 
-    private fun observeRepositoriesInternal(
-        userName: String
-    ): Observable<GithubResult> = databaseSource
+    override fun observeRepositories(userName: String): Observable<GithubResult> = databaseSource
         .observeRepositoriesByUserName(userName)
         .doOnSubscribe {
-            compositeDisposable += refreshRepositories(userName).subscribe()
+            compositeDisposable += refreshRepositories(userName).subscribeBy(
+                onError = {
+                    Log.d(LOG_TAG, "Error while refreshing repositories: $it")
+                }
+            )
         }
         .map { result ->
             if (result.isEmpty()) {
@@ -47,6 +43,7 @@ class GithubRepositoryImpl @Inject constructor(
                 GithubResult.Success(userName, result.map { repositoryMapper.map(it) })
             }
         }
+        .subscribeOn(Schedulers.io())
 
     override fun refreshRepositories(userName: String): Observable<GithubResult> = updateController
         .performUpdate(userName)
@@ -54,23 +51,20 @@ class GithubRepositoryImpl @Inject constructor(
             when (updateResult) {
                 is UpdateResult.Success -> {
                     val entities = updateResult.repositoriesDto.map { repositoryMapper.map(it) }
-                    saveRepositories(userName, updateResult.repositoriesDto)
-                        .andThen(
-                            Observable.just(
-                                GithubResult.Success(
-                                    userName,
-                                    entities
-                                )
-                            )
+                    Observable.just(
+                        GithubResult.Success(
+                            userName,
+                            entities
                         )
+                    )
                 }
-                UpdateResult.RepeatedRequest -> {
+                UpdateResult.AlreadyInProgress -> {
                     Observable.just(GithubResult.Error.RepeatedRequest)
                 }
             }
         }
         .onErrorResumeNext { error: Throwable ->
-            if (!connectionInfoProvider.isConnectedToNetwork()) {
+            if (error is UnknownHostException) {
                 Observable.just(GithubResult.Error.NoInternet)
             } else {
                 Observable.error(error)
@@ -78,20 +72,8 @@ class GithubRepositoryImpl @Inject constructor(
         }
         .subscribeOn(Schedulers.io())
 
-    private fun saveRepositories(
-        userName: String,
-        repositoriesDto: List<RepositoryDto>
-    ): Completable {
-        val databaseEntities =
-            repositoriesDto.map { repositoryDatabaseEntityMapper.map(it, userName) }
-        val userNameDb = userNameDatabaseEntityMapper.map(userName, System.currentTimeMillis())
-        return databaseSource
-            .saveUserName(userNameDb)
-            .andThen(databaseSource.saveRepositories(databaseEntities))
-    }
+    private companion object {
 
-    override fun clearSubscriptions() {
-        updateController.clearSubscriptions()
-        compositeDisposable.clear()
+        const val LOG_TAG = "GithubRepositoryImpl"
     }
 }
