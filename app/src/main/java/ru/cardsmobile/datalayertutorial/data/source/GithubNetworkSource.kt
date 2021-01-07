@@ -1,7 +1,7 @@
 package ru.cardsmobile.datalayertutorial.data.source
 
 import io.reactivex.Single
-import ru.cardsmobile.datalayertutorial.data.dto.RepositoryDto
+import ru.cardsmobile.datalayertutorial.data.source.network.dto.RepositoryDto
 
 interface GithubNetworkSource {
 

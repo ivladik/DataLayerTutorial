@@ -1,8 +1,8 @@
 package ru.cardsmobile.datalayertutorial.data.source
 
 import io.reactivex.*
-import ru.cardsmobile.datalayertutorial.data.database.entity.RepositoryDb
-import ru.cardsmobile.datalayertutorial.data.database.entity.UserNameDb
+import ru.cardsmobile.datalayertutorial.data.source.database.dto.RepositoryDb
+import ru.cardsmobile.datalayertutorial.data.source.database.dto.UserNameDb
 
 interface GithubDatabaseSource {
 

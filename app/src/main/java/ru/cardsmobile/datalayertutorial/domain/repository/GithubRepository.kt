@@ -9,7 +9,7 @@ interface GithubRepository {
 
     fun getLatestUserName(): Maybe<String>
 
-    fun observeRepositories(userName: String): Observable<GithubResult>
+    fun observeGithubResult(userName: String): Observable<GithubResult>
 
-    fun refreshRepositories(userName: String): Observable<GithubResult>
+    fun refreshGithubResult(userName: String): Observable<GithubResult>
 }

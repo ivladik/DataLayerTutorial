@@ -1,9 +1,9 @@
 package ru.cardsmobile.datalayertutorial.data.repository
 
 import io.reactivex.ObservableEmitter
-import ru.cardsmobile.datalayertutorial.data.model.PutResult
-import ru.cardsmobile.datalayertutorial.data.model.RegistryItem
-import ru.cardsmobile.datalayertutorial.data.model.UpdateResult
+import ru.cardsmobile.datalayertutorial.data.repository.model.PutResult
+import ru.cardsmobile.datalayertutorial.data.repository.model.RegistryItem
+import ru.cardsmobile.datalayertutorial.data.repository.model.UpdateResult
 import javax.inject.Inject
 import javax.inject.Singleton
 

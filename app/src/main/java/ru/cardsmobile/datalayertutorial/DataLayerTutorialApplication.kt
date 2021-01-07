@@ -2,7 +2,7 @@ package ru.cardsmobile.datalayertutorial
 
 import android.app.Application
 import ru.cardsmobile.datalayertutorial.di.AppInjector
-import ru.cardsmobile.datalayertutorial.di.DaggerApplicationComponent
+import ru.cardsmobile.datalayertutorial.di.component.DaggerApplicationComponent
 
 class DataLayerTutorialApplication : Application() {
 

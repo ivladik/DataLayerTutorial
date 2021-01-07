@@ -6,19 +6,29 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import ru.cardsmobile.datalayertutorial.data.model.UpdateResult
-import ru.cardsmobile.datalayertutorial.data.mapper.RepositoryMapper
+import ru.cardsmobile.datalayertutorial.data.repository.exception.DtoMappingException
+import ru.cardsmobile.datalayertutorial.data.repository.mapper.RepositoryDbMapper
+import ru.cardsmobile.datalayertutorial.data.repository.model.UpdateResult
+import ru.cardsmobile.datalayertutorial.data.repository.mapper.RepositoryMapper
+import ru.cardsmobile.datalayertutorial.data.repository.mapper.UserNameDbMapper
 import ru.cardsmobile.datalayertutorial.data.source.GithubDatabaseSource
+import ru.cardsmobile.datalayertutorial.data.source.network.dto.RepositoryDto
 import ru.cardsmobile.datalayertutorial.domain.entity.GithubResult
+import ru.cardsmobile.datalayertutorial.domain.exception.GithubException.EmptyDataException
+import ru.cardsmobile.datalayertutorial.domain.exception.GithubException.InvalidDataException
+import ru.cardsmobile.datalayertutorial.domain.exception.GithubException.NoInternetException
+import ru.cardsmobile.datalayertutorial.domain.exception.GithubException.RepeatedRequestException
 import ru.cardsmobile.datalayertutorial.domain.repository.GithubRepository
 import java.net.UnknownHostException
 import javax.inject.Inject
 
 class GithubRepositoryImpl @Inject constructor(
     private val databaseSource: GithubDatabaseSource,
-    private val updateController: GithubUpdateController,
+    private val networkUpdateController: GithubNetworkUpdateController,
+    private val repositoryDbMapper: RepositoryDbMapper,
+    private val userNameDbMapper: UserNameDbMapper,
     private val repositoryMapper: RepositoryMapper
-) : GithubRepository {
+) : GithubRepository, GithubNetworkUpdateController.OnRepositoriesLoaded {
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -27,50 +37,68 @@ class GithubRepositoryImpl @Inject constructor(
         .map { it.userName }
         .subscribeOn(Schedulers.io())
 
-    override fun observeRepositories(userName: String): Observable<GithubResult> = databaseSource
+    override fun observeGithubResult(userName: String): Observable<GithubResult> = databaseSource
         .observeRepositoriesByUserName(userName)
         .doOnSubscribe {
-            compositeDisposable += refreshRepositories(userName).subscribeBy(
+            compositeDisposable += refreshGithubResult(userName).subscribeBy(
                 onError = {
                     Log.d(LOG_TAG, "Error while refreshing repositories: $it")
                 }
             )
         }
-        .map { result ->
+        .flatMap { result ->
             if (result.isEmpty()) {
-                GithubResult.Empty
+                Observable.error(EmptyDataException())
             } else {
-                GithubResult.Success(userName, result.map { repositoryMapper.map(it) })
+                Observable.just(GithubResult(userName, result.map { repositoryMapper.map(it) }))
             }
         }
         .subscribeOn(Schedulers.io())
 
-    override fun refreshRepositories(userName: String): Observable<GithubResult> = updateController
-        .performUpdate(userName)
-        .flatMap { updateResult ->
-            when (updateResult) {
-                is UpdateResult.Success -> {
-                    val entities = updateResult.repositoriesDto.map { repositoryMapper.map(it) }
-                    Observable.just(
-                        GithubResult.Success(
-                            userName,
-                            entities
-                        )
-                    )
-                }
-                UpdateResult.AlreadyInProgress -> {
-                    Observable.just(GithubResult.Error.RepeatedRequest)
+    override fun refreshGithubResult(userName: String): Observable<GithubResult> =
+        networkUpdateController
+            .performUpdate(userName, this)
+            .flatMap { updateResult ->
+                when (updateResult) {
+                    is UpdateResult.Success -> {
+                        val entities = updateResult.repositoriesDto.map { repositoryMapper.map(it) }
+                        Observable.just(GithubResult(userName, entities))
+                    }
+                    UpdateResult.AlreadyInProgress -> {
+                        Observable.error(RepeatedRequestException())
+                    }
                 }
             }
-        }
-        .onErrorResumeNext { error: Throwable ->
-            if (error is UnknownHostException) {
-                Observable.just(GithubResult.Error.NoInternet)
-            } else {
-                Observable.error(error)
+            .onErrorResumeNext { error: Throwable ->
+                when (error) {
+                    is UnknownHostException -> {
+                        Observable.error(NoInternetException())
+                    }
+                    is DtoMappingException -> {
+                        Observable.error(InvalidDataException())
+                    }
+                    else -> {
+                        Observable.error(error)
+                    }
+                }
             }
+            .subscribeOn(Schedulers.io())
+
+    override fun onRepositoriesLoaded(
+        userName: String,
+        repositoriesDto: List<RepositoryDto>
+    ): Completable = Single
+        .fromCallable {
+            val repositoriesDb =
+                repositoriesDto.map {
+                    repositoryDbMapper.map(it, userName)
+                }
+            val userNameDb = userNameDbMapper.map(userName, System.currentTimeMillis())
+            userNameDb to repositoriesDb
         }
-        .subscribeOn(Schedulers.io())
+        .flatMapCompletable { (userNameDb, repositoriesDb) ->
+            databaseSource.saveRepositories(repositoriesDb, userNameDb)
+        }
 
     private companion object {
 
