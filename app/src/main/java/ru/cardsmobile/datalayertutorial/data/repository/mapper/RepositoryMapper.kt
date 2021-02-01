@@ -10,6 +10,7 @@ class RepositoryMapper @Inject constructor() {
 
     fun map(repositoryDb: RepositoryDb): Repository =
         Repository(
+            repositoryDb.id,
             repositoryDb.name,
             repositoryDb.starsCount,
             repositoryDb.forksCount
@@ -17,6 +18,8 @@ class RepositoryMapper @Inject constructor() {
 
     fun map(repositoryDto: RepositoryDto): Repository =
         Repository(
+            repositoryDto.id
+                ?: throw DtoMappingException("Error mapping repositoryDto.id field"),
             repositoryDto.name
                 ?: throw DtoMappingException("Error mapping repositoryDto.name field"),
             repositoryDto.starsCount

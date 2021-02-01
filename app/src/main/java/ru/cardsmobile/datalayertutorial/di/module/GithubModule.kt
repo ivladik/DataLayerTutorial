@@ -16,9 +16,10 @@ import ru.cardsmobile.datalayertutorial.data.source.database.RepositoryDao
 import ru.cardsmobile.datalayertutorial.data.source.database.UserNameDao
 import ru.cardsmobile.datalayertutorial.data.repository.GithubRepositoryImpl
 import ru.cardsmobile.datalayertutorial.data.source.GithubDatabaseSource
+import ru.cardsmobile.datalayertutorial.data.source.NetworkSource
 import ru.cardsmobile.datalayertutorial.data.source.database.GithubDatabaseSourceImpl
-import ru.cardsmobile.datalayertutorial.data.source.GithubNetworkSource
 import ru.cardsmobile.datalayertutorial.data.source.network.GithubNetworkSourceImpl
+import ru.cardsmobile.datalayertutorial.data.source.network.dto.RepositoryDto
 import ru.cardsmobile.datalayertutorial.di.ViewModelKey
 import ru.cardsmobile.datalayertutorial.domain.repository.GithubRepository
 import ru.cardsmobile.datalayertutorial.presentation.ui.main.GithubViewModel
@@ -32,7 +33,7 @@ abstract class GithubModule {
     abstract fun bindsGithubRepository(githubRepositoryImpl: GithubRepositoryImpl): GithubRepository
 
     @Binds
-    abstract fun bindsGithubNetworkSource(githubNetworkSourceImpl: GithubNetworkSourceImpl): GithubNetworkSource
+    abstract fun bindsGithubNetworkSource(githubNetworkSourceImpl: GithubNetworkSourceImpl): NetworkSource<String, List<RepositoryDto>>
 
     @Binds
     abstract fun bindsGithubDatabaseSource(githubDatabaseSourceImpl: GithubDatabaseSourceImpl): GithubDatabaseSource

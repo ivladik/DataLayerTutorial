@@ -1,21 +1,20 @@
 package ru.cardsmobile.datalayertutorial.data.repository.mapper
 
 import ru.cardsmobile.datalayertutorial.data.source.database.dto.RepositoryDb
-import ru.cardsmobile.datalayertutorial.data.source.network.dto.RepositoryDto
-import ru.cardsmobile.datalayertutorial.data.repository.exception.DtoMappingException
+import ru.cardsmobile.datalayertutorial.domain.entity.Repository
 import javax.inject.Inject
 
 class RepositoryDbMapper @Inject constructor() {
 
     fun map(
-        repositoryDto: RepositoryDto,
+        repository: Repository,
         userName: String
     ): RepositoryDb =
         RepositoryDb(
-            id = repositoryDto.id ?: throw DtoMappingException(),
+            id = repository.id,
             userNameId = userName,
-            starsCount = repositoryDto.starsCount ?: throw DtoMappingException(),
-            forksCount = repositoryDto.forksCount ?: throw DtoMappingException(),
-            name = repositoryDto.name ?: throw DtoMappingException()
+            starsCount = repository.starsCount,
+            forksCount = repository.forksCount,
+            name = repository.name
         )
 }
