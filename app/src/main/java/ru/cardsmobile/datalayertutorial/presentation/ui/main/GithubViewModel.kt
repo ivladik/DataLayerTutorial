@@ -49,7 +49,7 @@ class GithubViewModel @Inject constructor(
                 githubState.postValue(GithubState.Success(it))
             },
             {
-                Log.d(LOG_TAG, "Observe failed - error: $it")
+                Log.e(LOG_TAG, "Observe failed - error: $it")
                 githubState.postValue(GithubState.Error(it))
             }
         )
