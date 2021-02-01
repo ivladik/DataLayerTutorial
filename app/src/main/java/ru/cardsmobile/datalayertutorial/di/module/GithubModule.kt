@@ -11,13 +11,10 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.cardsmobile.datalayertutorial.data.source.network.GithubApi
-import ru.cardsmobile.datalayertutorial.data.source.database.GithubDatabase
-import ru.cardsmobile.datalayertutorial.data.source.database.RepositoryDao
-import ru.cardsmobile.datalayertutorial.data.source.database.UserNameDao
 import ru.cardsmobile.datalayertutorial.data.repository.GithubRepositoryImpl
 import ru.cardsmobile.datalayertutorial.data.source.GithubDatabaseSource
 import ru.cardsmobile.datalayertutorial.data.source.NetworkSource
-import ru.cardsmobile.datalayertutorial.data.source.database.GithubDatabaseSourceImpl
+import ru.cardsmobile.datalayertutorial.data.source.database.*
 import ru.cardsmobile.datalayertutorial.data.source.network.GithubNetworkSourceImpl
 import ru.cardsmobile.datalayertutorial.data.source.network.dto.RepositoryDto
 import ru.cardsmobile.datalayertutorial.di.ViewModelKey
@@ -66,6 +63,11 @@ abstract class GithubModule {
         @JvmStatic
         fun providesUserNameDao(githubDatabase: GithubDatabase): UserNameDao =
             githubDatabase.userNameDao()
+
+        @Provides
+        @JvmStatic
+        fun providesRepositoryUserNameDao(githubDatabase: GithubDatabase): RepositoryUserNameDao =
+            githubDatabase.repositoryUserNameDao()
 
         @Provides
         @JvmStatic

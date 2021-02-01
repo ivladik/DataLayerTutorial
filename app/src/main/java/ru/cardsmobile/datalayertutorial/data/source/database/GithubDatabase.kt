@@ -21,6 +21,8 @@ abstract class GithubDatabase : RoomDatabase() {
 
     abstract fun userNameDao(): UserNameDao
 
+    abstract fun repositoryUserNameDao(): RepositoryUserNameDao
+
     companion object {
 
         fun newInstance(application: Application): GithubDatabase = Room

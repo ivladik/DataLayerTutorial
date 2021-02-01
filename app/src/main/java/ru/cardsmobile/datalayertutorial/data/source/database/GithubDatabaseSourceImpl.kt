@@ -8,7 +8,8 @@ import javax.inject.Inject
 
 class GithubDatabaseSourceImpl @Inject constructor(
     private val repositoryDao: RepositoryDao,
-    private val userNameDao: UserNameDao
+    private val userNameDao: UserNameDao,
+    private val repositoryUserNameDao: RepositoryUserNameDao
 ) : GithubDatabaseSource {
 
     override fun observeRepositoriesByUserName(userName: String): Observable<List<RepositoryDb>> =
@@ -17,9 +18,15 @@ class GithubDatabaseSourceImpl @Inject constructor(
     override fun saveRepositories(
         repositoriesDb: List<RepositoryDb>,
         userNameDb: UserNameDb
-    ): Completable = userNameDao
-        .insertUserName(userNameDb)
-        .andThen(repositoryDao.insertRepositories(repositoriesDb))
+    ): Completable =
+        Completable.fromAction {
+            repositoryUserNameDao.saveRepositories(
+                userNameDao,
+                repositoryDao,
+                userNameDb,
+                repositoriesDb
+            )
+        }
 
     override fun getLatestUserName(): Maybe<UserNameDb> =
         userNameDao.selectLatestUserName()

@@ -14,5 +14,8 @@ interface RepositoryDao {
         observeRepositoriesByUserName(userName).distinctUntilChanged()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertRepositories(repositoryDbs: List<RepositoryDb>): Completable
+    fun insertRepositories(repositoryDbs: List<RepositoryDb>)
+
+    @Query("DELETE FROM Repository WHERE userNameId = :userName")
+    fun deleteRepositoriesByUserName(userName: String)
 }
