@@ -2,9 +2,7 @@ package ru.cardsmobile.datalayertutorial.data.repository
 
 import io.reactivex.SingleEmitter
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class UpdateRegistry<P, R> @Inject constructor() {
 
     private val requestsInProgress = mutableListOf<RegistryItem<P, R>>()

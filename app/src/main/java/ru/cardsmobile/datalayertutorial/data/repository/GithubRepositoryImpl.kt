@@ -43,7 +43,7 @@ class GithubRepositoryImpl @Inject constructor(
         .doOnSubscribe {
             compositeDisposable += refreshGithubResult(userName).subscribeBy(
                 onError = {
-                    Log.d(LOG_TAG, "Error while refreshing repositories: $it")
+                    Log.e(LOG_TAG, "Error while refreshing repositories: $it")
                 }
             )
         }

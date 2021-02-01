@@ -33,7 +33,7 @@ class NetworkUpdateController<P, R> @Inject constructor(
 //                    .subscribeOn(Schedulers.io())
                     .subscribeBy(
                         onError = {
-                            Log.d(LOG_TAG, "Error while getting repositories: $it")
+                            Log.e(LOG_TAG, "Error while getting repositories: $it")
                         }
                     )
             }
