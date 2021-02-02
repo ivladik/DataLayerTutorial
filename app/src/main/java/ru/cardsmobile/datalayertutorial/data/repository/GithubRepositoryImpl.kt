@@ -55,23 +55,23 @@ class GithubRepositoryImpl @Inject constructor(
 
     override fun refreshGithubResult(
         userName: String
-    ): Observable<GithubResult> = networkUpdateController
+    ): Single<GithubResult> = networkUpdateController
         .performUpdate(userName)
         .map { result -> result.map { repositoryMapper.map(it) } }
-        .flatMapObservable { repositories ->
+        .flatMap { repositories ->
             saveRepositories(userName, repositories)
-                .andThen(Observable.just(GithubResult(userName, repositories)))
+                .andThen(Single.just(GithubResult(userName, repositories)))
         }
         .onErrorResumeNext { error: Throwable ->
             when (error) {
                 is UnknownHostException -> {
-                    Observable.error(NoInternetException())
+                    Single.error(NoInternetException())
                 }
                 is DtoMappingException -> {
-                    Observable.error(InvalidDataException())
+                    Single.error(InvalidDataException())
                 }
                 else -> {
-                    Observable.error(error)
+                    Single.error(error)
                 }
             }
         }
