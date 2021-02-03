@@ -80,15 +80,10 @@ class GithubRepositoryImpl @Inject constructor(
     private fun saveRepositories(
         userName: String,
         repositories: List<Repository>
-    ): Completable = Singles
-        .zip(
-            Single.fromCallable {
-                repositories.map { repositoryDbMapper.map(it, userName) }
-            },
-            Single.fromCallable {
-                userNameDbMapper.map(userName, System.currentTimeMillis())
-            }
-        ) { repositoriesDb: List<RepositoryDb>, userNameDb: UserNameDb ->
+    ): Completable = Single
+        .fromCallable {
+            val repositoriesDb = repositories.map { repositoryDbMapper.map(it, userName) }
+            val userNameDb = userNameDbMapper.map(userName, System.currentTimeMillis())
             repositoriesDb to userNameDb
         }
         .flatMapCompletable { (repositoriesDb, userNameDb) ->
