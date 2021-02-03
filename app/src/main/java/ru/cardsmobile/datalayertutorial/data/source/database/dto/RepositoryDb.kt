@@ -10,14 +10,14 @@ import androidx.room.PrimaryKey
         ForeignKey(
             entity = UserNameDb::class,
             parentColumns = ["userName"],
-            childColumns = ["userNameId"]
+            childColumns = ["userName"]
         )
     ]
 )
 data class RepositoryDb(
     @PrimaryKey
     val id: Long,
-    val userNameId: String,
+    val userName: String,
     val name: String,
     val starsCount: Int,
     val forksCount: Int

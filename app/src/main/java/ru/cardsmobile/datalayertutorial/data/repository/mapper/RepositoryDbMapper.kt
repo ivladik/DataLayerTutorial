@@ -12,7 +12,7 @@ class RepositoryDbMapper @Inject constructor() {
     ): RepositoryDb =
         RepositoryDb(
             id = repository.id,
-            userNameId = userName,
+            userName = userName,
             starsCount = repository.starsCount,
             forksCount = repository.forksCount,
             name = repository.name
